@@ -437,6 +437,72 @@ func TestMapsWithNilPointer(t *testing.T) {
 	}
 }
 
+func TestMapsWithOverwrite_MapAndSlice(t *testing.T) {
+	m := map[string]interface{}{
+		"a": 1, // be override by map
+		"b": map[string]interface{}{
+			"b1": "b1-value",
+		}, // merge
+		"c": map[string]interface{}{
+			"c1": "c1-value",
+		}, // be override by string
+		"d": []string{"1", "2"}, // be override by string
+		"e": []string{"1", "2"}, // be override by map
+		"f": nil,                // be override by map
+		"g": map[string]interface{}{
+			"g1": "g1-value",
+		}, // be override by nil
+		"h": map[string]interface{}{
+			"h1": "h1-value",
+		}, // be override by empty map
+	}
+	n := map[string]interface{}{
+		"a": map[string]interface{}{
+			"a2": "a2-value",
+		},
+		"b": map[string]interface{}{
+			"b2": "b2-value",
+		},
+		"c": "c2",
+		"d": "d2",
+		"e": map[string]interface{}{
+			"e2": "e2-value",
+		},
+		"f": map[string]interface{}{
+			"f2": "f2-value",
+		},
+		"g": nil,
+		"h": map[string]interface{}{},
+	}
+	expect := map[string]interface{}{
+		"a": map[string]interface{}{
+			"a2": "a2-value",
+		},
+		"b": map[string]interface{}{
+			"b1": "b1-value",
+			"b2": "b2-value",
+		},
+		"c": "c2",
+		"d": "d2",
+		"e": map[string]interface{}{
+			"e2": "e2-value",
+		},
+		"f": map[string]interface{}{
+			"f2": "f2-value",
+		},
+		"g": nil,
+		"h": map[string]interface{}{},
+	}
+
+	if err := MergeWithOverwrite(&m, n); err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	if !reflect.DeepEqual(m, expect) {
+		t.Fatalf("Test failed:\ngot  :\n%#v\n\nwant :\n%#v\n\n", m, expect)
+	}
+}
+
 func TestYAMLMaps(t *testing.T) {
 	thing := loadYAML("testdata/thing.yml")
 	license := loadYAML("testdata/license.yml")
